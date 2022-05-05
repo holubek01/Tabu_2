@@ -4,7 +4,7 @@ import random
 import math
 
 problem = tsplib95.load('C:\\Users\\holub\\OneDrive - Politechnika '
-                        'Wroclawska\\Desktop\\ALL_atsp\\att532.tsp\\gr229.tsp')
+                        'Wroclawska\\Desktop\\ALL_atsp\\att532.tsp\\berlin52.tsp')
 
 k = problem.is_full_matrix()
 zmienna = list(problem.get_nodes())
@@ -18,7 +18,6 @@ matr = [[0 for _ in range(sizeTab)] for _ in range(sizeTab)]
 tour_array = [[0 for _ in range(sizeTab)] for _ in range(10)]
 parametersSizes = [0 for j in range(5)]
 results = [[0 for _ in range(5)] for _ in range(5)]
-
 
 iteration_counter = 0
 minimum2 = 0
@@ -84,13 +83,6 @@ def prepare(tour):
 def reverse_sublist(my_list, start, end):
     my_list[start:end] = my_list[start:end][::-1]
     return my_list
-
-
-#def invert(swap_tour, i, j):
-#    reverse_sublist(swap_tour, i, j + 1)
-#    zmienna2 = destination(len(swap_tour), matr, swap_tour)
-#    reverse_sublist(swap_tour, i, j + 1)
-#    return zmienna2
 
 
 def accelerate(act_tour, index1, index2, act_dest):
@@ -229,7 +221,7 @@ def main():
         fill_matrix(sizeTab, matr, 0)
 
     sum = 0
-    for j in range(3):
+    for j in range(6):
         global iteration_counter
         iteration_counter = 0
         for i in range(0, int(sizeTab)):
@@ -239,9 +231,9 @@ def main():
         global minimum2
         minimum2 = destination(sizeTab, matr, tourrr)
         global max_iteration
-        max_iteration = sizeTab/2
+        max_iteration = sizeTab / 2
         global queue_size
-        queue_size = sizeTab/2
+        queue_size = sizeTab / 2
         global q
         q = LifoQueue(queue_size)
         koks_funkcja(tourrr)
@@ -253,8 +245,9 @@ def main():
         isLongTermUsed = False
         sum += minimum2
 
-    avgg = sum / 3
+    avgg = sum / 6
     print(avgg)
+
 
 if __name__ == "__main__":
     main()
