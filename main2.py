@@ -2,26 +2,27 @@ import tsplib95
 from queue import LifoQueue
 import random
 import math
+import numpy as np
+import time
 
-problem = tsplib95.load('C:\\Users\\holub\\OneDrive - Politechnika '
-                        'Wroclawska\\Desktop\\ALL_atsp\\att532.tsp\\gr229.tsp')
 
-k = problem.is_full_matrix()
-zmienna = list(problem.get_nodes())
-sizeTab = len(zmienna)
+sizeTab = 0
 queue_size = 5
 max_iteration = 5
 
 tour = [0 for j in range(int(sizeTab))]
 optTour = [0 for j in range(int(sizeTab))]
-matr = [[0 for _ in range(sizeTab)] for _ in range(sizeTab)]
 tour_array = [[0 for _ in range(sizeTab)] for _ in range(10)]
 parametersSizes = [0 for j in range(5)]
 results = [[0 for _ in range(5)] for _ in range(5)]
 
+matr = np.zeros((10,10))
+
+time1 = 0
 
 iteration_counter = 0
 minimum2 = 0
+minimum_tour = tour.copy()
 count_iterations = 0
 array_iterator = 0
 isLongTermUsed = False
@@ -42,12 +43,13 @@ def close_neighbour(optTour, matr, tour):
             optTour[i + 1] = tour[0]
     return optTour
 
-
-def fill_matrix(sizeTab, matr, l):
-    for i in range(0, sizeTab):
-        for j in range(0, sizeTab):
-            edge = i + l, j + l
-            matr[i][j] = problem.get_weight(*edge)
+def create_and_fill_matrix(n):
+    global matr
+    matr = np.zeros((n, n))
+    for i in range(n):
+         for j in range(n):
+            if i != j:
+                 matr[i][j] = random.randint(0,1000)
 
 
 def destination(sizeTab, matr, tour3):
@@ -86,11 +88,11 @@ def reverse_sublist(my_list, start, end):
     return my_list
 
 
-#def invert(swap_tour, i, j):
-#    reverse_sublist(swap_tour, i, j + 1)
-#    zmienna2 = destination(len(swap_tour), matr, swap_tour)
-#    reverse_sublist(swap_tour, i, j + 1)
-#    return zmienna2
+def invert(swap_tour, i, j):
+    reverse_sublist(swap_tour, i, j + 1)
+    zmienna2 = destination(len(swap_tour), matr, swap_tour)
+    reverse_sublist(swap_tour, i, j + 1)
+    return zmienna2
 
 
 def accelerate(act_tour, index1, index2, act_dest):
@@ -129,6 +131,13 @@ def invert2(swap_tour, i, j):
     return zmienna2
 
 
+def invert3(swap_tour, i, j):
+    reverse_sublist(swap_tour, i, j + 1)
+    zmienna2 = swap_tour
+    reverse_sublist(swap_tour, i, j + 1)
+    return zmienna2
+
+
 def isInQueue(x, y):
     temp = (x, y)
 
@@ -141,10 +150,12 @@ def isInQueue(x, y):
 def koks_funkcja(acutal_tour):
     actual_destination = destination(sizeTab, matr, acutal_tour)
     mini = accelerate(acutal_tour, 0, 2, actual_destination)
+    tour_mini = acutal_tour.copy()
     k = 0
     l = 1
 
     global minimum2
+    global minimum_tour
     for i in range(0, len(acutal_tour)):
         for j in range(i + 1, len(acutal_tour)):
             potential_mini = accelerate(acutal_tour, i, j, actual_destination)
@@ -153,11 +164,14 @@ def koks_funkcja(acutal_tour):
                 if potential_mini < minimum2:
                     minimum2 = potential_mini
                     mini = potential_mini
+                    minimum_tour = invert3(acutal_tour, i, j)
+                    tour_mini = invert3(acutal_tour, i, j)
                     k = i
                     l = j
             else:
                 if potential_mini < mini:
                     mini = potential_mini
+                    tour_mini = invert3(acutal_tour, i, j)
 
                     k = i
                     l = j
@@ -172,6 +186,7 @@ def koks_funkcja(acutal_tour):
 
     if mini < minimum2:
         minimum2 = mini
+        minimum_tour = tour_mini.copy()
         iteration_counter = 0
     else:
         iteration_counter = iteration_counter + 1
@@ -212,6 +227,23 @@ def setSizes():
 
 
 def main():
+    global sizeTab
+    while sizeTab<=0:
+        sizeTab = int(input("Podaj wielkość instancji: "))
+        if sizeTab <= 0:
+            print("Wielkosc instancji musi byc liczba dodatnia")
+
+    create_and_fill_matrix(sizeTab)
+
+    global tour
+    global optTour
+    global tour_array
+    tour = [0 for j in range(int(sizeTab))]
+    optTour = [0 for j in range(int(sizeTab))]
+    tour_array = [[0 for _ in range(sizeTab)] for _ in range(10)]
+
+    global matr
+    #print(matr)
     setSizes()
     global count_iterations
     count_iterations = 0
@@ -222,14 +254,10 @@ def main():
 
     global mini_tour
     global minimum_tour
-
-    if not k and not problem.is_explicit():
-        fill_matrix(sizeTab, matr, 1)
-    else:
-        fill_matrix(sizeTab, matr, 0)
+    global time1
 
     sum = 0
-    for j in range(3):
+    for j in range(10):
         global iteration_counter
         iteration_counter = 0
         for i in range(0, int(sizeTab)):
@@ -244,17 +272,23 @@ def main():
         queue_size = sizeTab/2
         global q
         q = LifoQueue(queue_size)
+        a1 = time.time()
         koks_funkcja(tourrr)
-        global tour_array
+        b1 = time.time()
+
+        time1+= ((b1-a1)*1000)
         tour_array = [[0 for _ in range(sizeTab)] for _ in range(10)]
         global array_iterator
         array_iterator = 0
         global isLongTermUsed
         isLongTermUsed = False
+
         sum += minimum2
 
-    avgg = sum / 3
+    avgg = sum / 10
+    time1 /= 10
     print(avgg)
+    print(time1)
 
 if __name__ == "__main__":
     main()
